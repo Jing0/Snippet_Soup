@@ -3,7 +3,7 @@
 #include <string.h>
 #include <openssl/aes.h>
 
-#define MAX_URI 256
+#define MAX_URI 257
 #define MAX_BUF 8192
 #define DEFAULT_OUT "./output.txt"
 #define DEFAULT_KEY "abcdefg"
