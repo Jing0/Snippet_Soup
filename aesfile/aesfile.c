@@ -5,7 +5,7 @@
 
 #define MAX_URI 257
 #define MAX_BUF 8192
-#define DEFAULT_OUT "./output.txt"
+#define DEFAULT_OUT "output.txt"
 #define DEFAULT_KEY "abcdefg"
 
 typedef unsigned char uchar;
@@ -100,6 +100,7 @@ int main(int argc, char const *argv[]) {
     }
 
     fwrite(outBuf, 1, outLen, out);
+    printf("output to file: %s\n", outPath);
     fclose(in);
     fclose(out);
     return 0;
