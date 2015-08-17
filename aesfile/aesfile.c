@@ -4,7 +4,7 @@
 #include <openssl/aes.h>
 
 #define MAX_URI 257
-#define MAX_BUF 8192
+#define MAX_BUF 16384
 #define DEFAULT_OUT "output.txt"
 #define DEFAULT_KEY "abcdefg"
 
@@ -33,11 +33,6 @@ int aes_dec(const uchar *in, uchar *out, const char *key, int inLen) {
     for (i = 0; i < inLen; i += AES_BLOCK_SIZE) {
         AES_decrypt(in + i, out + i, &decryptKey);
     }
-    /* remove extra '\0' at the end */
-    while (out[i-1] == '\0') {
-        --i;
-    }
-    printf("%s\n", out);
     return i;
 }
 
@@ -85,22 +80,30 @@ int main(int argc, char const *argv[]) {
         perror("cannot output file");
     }
 
-    uchar *inBuf = malloc(MAX_BUF), *outBuf = malloc(MAX_BUF);
-    memset(outBuf, 0, MAX_BUF);
-
-    int inLen = fread(inBuf, 1, MAX_BUF, in);
-    int outLen;
     if (strcmp(argv[1], "enc") == 0) {
+        uchar *inBuf = malloc(MAX_BUF), *outBuf = malloc(MAX_BUF);
+        memset(outBuf, 0, MAX_BUF);
+        int inLen = fread(inBuf, 1, MAX_BUF, in);
+        int outLen;
         outLen = aes_enc(inBuf, outBuf, key, inLen);
+        fprintf(out, "%d %d", outLen, inLen);
+        fwrite(outBuf, 1, outLen, out);
+        printf("output to file: %s\n", outPath);
     } else if (strcmp(argv[1], "dec") == 0) {
-        outLen = aes_dec(inBuf, outBuf, key, inLen);
+        uchar *inBuf = malloc(MAX_BUF), *outBuf = malloc(MAX_BUF);
+        memset(outBuf, 0, MAX_BUF);
+        int inLen, realLen;
+        fscanf(in, "%d %d", &inLen, &realLen);
+        fread(inBuf, 1, inLen, in);
+        aes_dec(inBuf, outBuf, key, inLen);
+        outBuf[realLen] = '\0';
+        fwrite(outBuf, 1, realLen, out);
+        printf("output to file: %s\n", outPath);
     } else {
         printUsage();
         exit(5);
     }
 
-    fwrite(outBuf, 1, outLen, out);
-    printf("output to file: %s\n", outPath);
     fclose(in);
     fclose(out);
     return 0;
